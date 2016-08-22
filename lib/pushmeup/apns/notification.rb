@@ -1,4 +1,4 @@
-module APNS
+class APNS
   class Notification
     attr_accessor :device_token, :alert, :badge, :sound, :other
 
