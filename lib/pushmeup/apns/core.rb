@@ -4,15 +4,19 @@ require 'json'
 
 class APNS
 
+  def initialize(persistent, mutex, retries) # Initialize method 
+     @persistent, @mutex, @retries = persistent, mutex, retries      # Sets initial values for instance variables
+  end
+
   @host = 'gateway.sandbox.push.apple.com'
   @port = 2195
   # openssl pkcs12 -in mycert.p12 -out client-cert.pem -nodes -clcerts
   @pem = nil # this should be the path of the pem file not the contentes
   @pass = nil
   
-  @persistent = false
-  @mutex = Mutex.new
-  @retries = 3 # TODO: check if we really need this
+  # @persistent = false
+  # @mutex = Mutex.new
+  # @retries = 3 # TODO: check if we really need this
   
   @sock = nil
   @ssl = nil
