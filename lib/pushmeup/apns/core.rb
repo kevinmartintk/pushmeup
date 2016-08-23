@@ -4,36 +4,32 @@ require 'json'
 
 class APNS
 
-  def initialize(persistent, mutex, retries) # Initialize method 
-     @persistent, @mutex, @retries = persistent, mutex, retries      # Sets initial values for instance variables
-  end
-
-  @host = 'gateway.sandbox.push.apple.com'
-  @port = 2195
+  @@host = 'gateway.sandbox.push.apple.com'
+  @@port = 2195
   # openssl pkcs12 -in mycert.p12 -out client-cert.pem -nodes -clcerts
-  @pem = nil # this should be the path of the pem file not the contentes
-  @pass = nil
+  @@pem = nil # this should be the path of the pem file not the contentes
+  @@pass = nil
   
-  # @persistent = false
-  # @mutex = Mutex.new
-  # @retries = 3 # TODO: check if we really need this
+  @@persistent = false
+  @@mutex = Mutex.new
+  @@retries = 3 # TODO: check if we really need this
   
-  @sock = nil
-  @ssl = nil
+  @@sock = nil
+  @@ssl = nil
   
   class << self
     attr_accessor :host, :pem, :port, :pass
   end
   
   def self.start_persistence
-    @persistent = true
+    @@persistent = true
   end
   
   def self.stop_persistence
-    @persistent = false
+    @@persistent = false
     
-    @ssl.close
-    @sock.close
+    @@ssl.close
+    @@sock.close
   end
   
   def self.send_notification(device_token, message)
@@ -42,10 +38,10 @@ class APNS
   end
   
   def self.send_notifications(notifications)
-    @mutex.synchronize do
+    @@mutex.synchronize do
       self.with_connection do
         notifications.each do |n|
-          @ssl.write(n.packaged_notification)
+          @@ssl.write(n.packaged_notification)
         end
       end
     end
@@ -74,29 +70,29 @@ protected
     attempts = 1
   
     begin      
-      # If no @ssl is created or if @ssl is closed we need to start it
-      if @ssl.nil? || @sock.nil? || @ssl.closed? || @sock.closed?
-        @sock, @ssl = self.open_connection
+      # If no @@ssl is created or if @@ssl is closed we need to start it
+      if @@ssl.nil? || @@sock.nil? || @@ssl.closed? || @@sock.closed?
+        @@sock, @@ssl = self.open_connection
       end
     
       yield
     
     rescue StandardError, Errno::EPIPE
-      raise unless attempts < @retries
+      raise unless attempts < @@retries
     
-      @ssl.close
-      @sock.close
+      @@ssl.close
+      @@sock.close
     
       attempts += 1
       retry
     end
   
     # Only force close if not persistent
-    unless @persistent
-      @ssl.close
-      @ssl = nil
-      @sock.close
-      @sock = nil
+    unless @@persistent
+      @@ssl.close
+      @@ssl = nil
+      @@sock.close
+      @@sock = nil
     end
   end
   
