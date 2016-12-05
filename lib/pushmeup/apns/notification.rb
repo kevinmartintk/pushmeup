@@ -1,6 +1,6 @@
 class APNS
   class Notification
-    attr_accessor :device_token, :alert, :badge, :sound, :other
+    attr_accessor :device_token, :alert, :badge, :sound, :other, :content_available
 
     def initialize(device_token, message)
       self.device_token = device_token
@@ -9,6 +9,7 @@ class APNS
         self.badge = message[:badge]
         self.sound = message[:sound]
         self.other = message[:other]
+        self.content_available = message[:'content-available']
       elsif message.is_a?(String)
         self.alert = message
       else
@@ -31,7 +32,9 @@ class APNS
       aps['aps']['alert'] = self.alert if self.alert
       aps['aps']['badge'] = self.badge if self.badge
       aps['aps']['sound'] = self.sound if self.sound
+      aps['aps']['content-available'] = self.content_available if self.content_available
       aps.merge!(self.other) if self.other
+      aps.delete('aps') if aps['aps'].empty?
       aps.to_json.gsub(/\\u([\da-fA-F]{4})/) {|m| [$1].pack("H*").unpack("n*").pack("U*")}
     end
 
@@ -40,6 +43,7 @@ class APNS
       alert == that.alert &&
       badge == that.badge &&
       sound == that.sound &&
+      content_available == that.content_available &&
       other == that.other
     end
 
